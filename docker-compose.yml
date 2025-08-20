@@ -1,0 +1,65 @@
+# Especifica la versión de la sintaxis del archivo Docker Compose.
+version: '3.9'
+
+# Define todos los contenedores (servicios) que componen la aplicación.
+services:
+  # Servicio para la API de Spring Boot.
+  images-api:
+    container_name: images-api-app
+    # Nombra y etiqueta la imagen que se creará a partir del dockerfile.
+    # greetingsapp es el nombre de la organizacion, images-api es el nombre de la imagen, 1.0.0 version de la imagen
+    image: greetingsapp/images-api:1.0.0
+    # Construye la imagen usando el dockerfile en el directorio ./images-api
+    build: ./images-api  # <--- Apunta a la subcarpeta
+    # Mapea el puerto 8080 del host al 8080 del contenedor.
+    ports:
+      - "8080:8080"
+    # Define las variables de entorno para la aplicación.
+    environment:
+      # Spring usará el perfil 'prod' para esta configuración.
+      - SPRING_PROFILES_ACTIVE=prod
+      # URL de la base de datos (usa el nombre del servicio 'db').
+      - DATASOURCE_URL=jdbc:mysql://image_db:3306/images_app?createDatabaseIfNotExist=true&serverTimezone=UTC
+      - DATASOURCE_USERNAME=root
+      - DATASOURCE_PASSWORD=admin_password_123
+      # Clave secreta para los tokens JWT.
+      - API_SECURITY_TOKEN_SECRET=mi-clave-secreta-para-la-app-de-imagenes
+    # Depende del servicio 'db' para arrancar.
+    depends_on:
+      image_db:
+        condition: service_healthy
+
+  # Servicio para la base de datos MySQL.
+  image_db:
+    # Asigna un nombre personalizado al contenedor de la base de datos.
+    container_name: images-api-db
+    # Utiliza la imagen oficial de MySQL versión 8.0 desde Docker Hub.
+    image: mysql:8.0
+    # Mapea el puerto 3307 del host al 3306 de MySQL en el contenedor.
+    ports:
+      - "3307:3306"
+    # Variables de entorno para configurar MySQL.
+    environment:
+      # Establece la contraseña para el usuario 'root' de MySQL.
+      MYSQL_ROOT_PASSWORD: admin_password_123
+      # Crea automáticamente una base de datos con este nombre al iniciar.
+      MYSQL_DATABASE: images_app
+    # Monta un volumen para que los datos de la BD sean persistentes.
+    volumes:
+      # Vincula el volumen nombrado 'db_data' al directorio de datos de MySQL dentro del contenedor.
+      - db_data:/var/lib/mysql
+    # Comprobación de salud para asegurar que la BD esté lista.
+    healthcheck:
+      # El comando que se ejecuta para verificar la salud (un ping al servidor MySQL).
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-p$${MYSQL_ROOT_PASSWORD}" ]
+      # El intervalo de tiempo entre cada comprobación (10 segundos).
+      interval: 10s
+      # El tiempo máximo de espera para que la comprobación responda (5 segundos).
+      timeout: 5s
+      # El número de reintentos fallidos antes de marcar el contenedor como "no saludable".
+      retries: 5
+
+# Declara los volúmenes nombrados que se usarán en los servicios.
+volumes:
+  # Define el volumen 'db_data' para el almacenamiento persistente de la base de datos.
+  db_data:
