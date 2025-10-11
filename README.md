@@ -14,23 +14,23 @@ una aplicación móvil de saludos, permitiendo la gestión completa de imágenes
 
 * **🔐 Autenticación y Autorización con JWT:** Endpoints de administrador protegidos usando JSON Web Tokens, con roles
   diferenciados (`ADMIN`, `CLIENT`).
-* ** CRUD Completo:** Operaciones para crear, leer, actualizar y eliminar categorías, temáticas e imágenes.
-* ** paginación:** La obtención de listas de imágenes está paginada para un rendimiento eficiente.
-* ** Arquitectura en capas:** Clara separación de responsabilidades (Controladores, Servicios, Repositorios).
-* ** Documentación con Swagger (OpenAPI):** Documentación de la API generada automáticamente y accesible de forma
+* **CRUD Completo:** Operaciones para crear, leer, actualizar y eliminar categorías, temáticas e imágenes.
+* **paginación:** La obtención de listas de imágenes está paginada para un rendimiento eficiente.
+* **Arquitectura en capas:** Clara separación de responsabilidades (Controladores, Servicios, Repositorios).
+* **Documentación con Swagger (OpenAPI):** Documentación de la API generada automáticamente y accesible de forma
   interactiva.
-* ** Entorno Dockerizado:** La aplicación y su base de datos se levantan con un solo comando gracias a `docker-compose`.
+* **Entorno Dockerizado:** La aplicación y su base de datos se levantan con un solo comando gracias a `docker-compose`.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-| Backend | Base de Datos | Contenerización | Testing |
-| :--- | :--- | :--- | :--- |
-| Java 17 | MySQL 8.0 | Docker | JUnit 5 |
-| Spring Boot 3 | Flyway | Docker Compose | Mockito |
-| Spring Security | | | |
-| Maven | | | |
+| Backend         | Base de Datos | Contenerización | Testing |
+|:----------------|:--------------|:----------------|:--------|
+| Java 17         | MySQL 8.0     | Docker          | JUnit 5 |
+| Spring Boot 3   | Flyway        | Docker Compose  | Mockito |
+| Spring Security |               |                 |         |
+| Maven           |               |                 |         |
 
 ---
 
