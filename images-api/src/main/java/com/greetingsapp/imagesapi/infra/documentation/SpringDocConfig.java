@@ -2,7 +2,6 @@ package com.greetingsapp.imagesapi.infra.documentation;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,11 +22,6 @@ public class SpringDocConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT"))
-                ) // 3. Cierra la configuración de componentes
-
-                // 4. Añade el requisito de seguridad AL OBJETO OPENAPI
-                .addSecurityItem(
-                        new SecurityRequirement().addList(securitySchemeName) // Corregido: sin "name:"
-                );
+                ); // 3. Cierra la configuración de componentes
     }
 }

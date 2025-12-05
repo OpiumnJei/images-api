@@ -10,7 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 //CLASE USADA PARA LA INICIALIZACION DE DATOS DE PRUEBA
-//@Component
+@Component
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
@@ -22,12 +22,14 @@ public class DataInitializer implements CommandLineRunner {
     //inicializacion
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Cargando datos iniciales...");
 
-        //inicializar categorias y tematicas
-        initializerCategoriesAndThemes();
-
-        System.out.println("Datos cargados.");
+        // SE VE VERIFICA SI LA BD ESTA VACIA, SINO LO ESTA SE CARGAN DATOS DE PRUEBA
+        if (categoryRepository.count() == 0) {
+            System.out.println("Cargando datos iniciales...");
+            //inicializar categorias y tematicas
+            initializerCategoriesAndThemes();
+            System.out.println("Datos cargados.");
+        }
     }
 
     //INICIALIZAR LAS CATEGORIAS
@@ -37,21 +39,20 @@ public class DataInitializer implements CommandLineRunner {
         saveCategoryAndTheme("Festividades", "Dia de las madres");
     }
 
-    //metodo para guardar categorias en la bd
+    //metodo para guardar categorias y tematicas en la bd
     private void saveCategoryAndTheme(String categoryName, String themeName) {
 
-        if (categoryRepository.count() == 0) { // si el conteo de registros en la bd es 0, se crean nuevos datos
-            // Creas y guardas una categoría
-            Category category = new Category();
-            category.setName(categoryName);
-            categoryRepository.save(category);
+        // Crea y guarda una categoría
+        Category category = new Category();
+        category.setName(categoryName);
+        categoryRepository.save(category);
 
-            // Creas una temática y la asocias a la primera categoría
-            Theme theme = new Theme();
-            theme.setName(themeName);
-            theme.setCategory(category);
-            themeRepository.save(theme);
+        // Crea una temática y la asocia a una categoría
+        Theme theme = new Theme();
+        theme.setName(themeName);
+        theme.setCategory(category);
+        themeRepository.save(theme);
 
-        }
     }
 }
+
