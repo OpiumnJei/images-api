@@ -1,10 +1,10 @@
 package com.greetingsapp.imagesapi.services;
 
 import com.greetingsapp.imagesapi.domain.images.Image;
+import com.greetingsapp.imagesapi.domain.images.ImageMapper;
 import com.greetingsapp.imagesapi.domain.themes.Theme;
 import com.greetingsapp.imagesapi.dto.images.CreateImageDTO;
 import com.greetingsapp.imagesapi.dto.images.ImageResponseDTO;
-import com.greetingsapp.imagesapi.domain.images.ImageMapper;
 import com.greetingsapp.imagesapi.dto.images.UpdateImageDTO;
 import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
@@ -107,6 +107,13 @@ public class ImageService {
         // mapear la lista/pagina de imagenes retornada
         return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
         // return imagePage.map(imageMapper::imageToImageResponseDTO);
+    }
+
+    //metodo usado para traer todas las imagenes con paginacion
+    public Page<ImageResponseDTO> getAllImages(Pageable pageable) {
+        Page<Image> imagePage = imageRepository.findAll(pageable);
+
+        return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 
 }
