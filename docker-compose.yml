@@ -21,7 +21,7 @@ services:
       # URL de la base de datos (usa el nombre del servicio 'db').
       - DATASOURCE_URL=jdbc:mysql://image_db:3306/images_app?createDatabaseIfNotExist=true&serverTimezone=UTC
       - DATASOURCE_USERNAME=root
-      - DATASOURCE_PASSWORD=admin_password_123
+        - DATASOURCE_PASSWORD=admin_password_123
       # Clave secreta para los tokens JWT.
       - API_SECURITY_TOKEN_SECRET=mi-clave-secreta-para-la-app-de-imagenes
     # Depende del servicio 'db' para arrancar.
