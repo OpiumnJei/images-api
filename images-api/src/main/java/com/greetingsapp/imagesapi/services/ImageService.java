@@ -109,11 +109,36 @@ public class ImageService {
         // return imagePage.map(imageMapper::imageToImageResponseDTO);
     }
 
-    //metodo usado para traer todas las imagenes con paginacion
+    // metodo usado para traer todas las imagenes con paginacion
     public Page<ImageResponseDTO> getAllImages(Pageable pageable) {
         Page<Image> imagePage = imageRepository.findAll(pageable);
 
         return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
+    }
+
+    // Metodo de búsqueda
+    public Page<ImageResponseDTO> searchImages(String query, Pageable pageable) {
+        // 1. Limpieza básica
+        String cleanQuery = query.trim();//elimina espacios al inicio y al final
+
+        // 2. Versión para la Descripción (mantiene espacios)
+        // Ej: "feliz cumpleaños" -> busca tal cual en la descripción
+        String descriptionQuery = cleanQuery;
+
+        // 3. Versión para el Nombre (convierte espacios a guiones)
+        // Ej: "feliz cumpleaños" -> "feliz-cumpleaños"
+        // El "\\s+" maneja si el usuario pone varios espacios por error.
+        String nameQuery = cleanQuery.replaceAll("\\s+", "-"); // convierte espacios a guiones
+
+        // 4. Pasamos la versión "kebab" al primer parámetro (name)
+        // y la versión "normal" al segundo (description).
+        Page<Image> results = imageRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                nameQuery,
+                descriptionQuery,
+                pageable
+        );
+
+        return results.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 
 }

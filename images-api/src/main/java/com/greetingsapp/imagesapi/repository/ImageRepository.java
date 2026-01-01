@@ -16,7 +16,10 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     // retorna una pagina que representara una imagen
     Page<Image> findByThemeId(Long themeId, Pageable pageable);
 
-    // --- MeTODO NUEVO ---
     // Busca una imagen por su nombre Y su objeto de temática asociado.
     Optional<Image> findByNameAndTheme(String name, Theme theme);
+
+    // Búsqueda flexible
+    // Traduccción: "Encuentra imágenes donde el (Nombre contenga X) O (Descripción contenga X), ignorando mayúsculas/minúsculas"
+    Page<Image> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
 }
