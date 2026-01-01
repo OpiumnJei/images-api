@@ -29,25 +29,29 @@ public class SecurityFilterJWT extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = recoverToken(request);
+        try {
+            String token = recoverToken(request);
+            if (token != null) {
+                String username = tokenService.getSubject(token);
+                var user = userRepository.findByUsername(username).orElseThrow();
 
-        if (token != null) {
-            // Si hay un token, obtenemos el username y cargamos los datos del usuario.
-            String username = tokenService.getSubject(token);
-            var user = userRepository.findByUsername(username).orElseThrow();
-
-            // Creamos un objeto de autenticación y lo guardamos en el contexto de seguridad.
-            var authentication = new UsernamePasswordAuthenticationToken(
-                    user,
-                    null,
-                    user.getAuthorities()
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        user,
+                        null,
+                        user.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (RuntimeException ex) {
+            // Si el token es inválido o expiró, limpiamos el contexto para asegurar que no quede basura
+            SecurityContextHolder.clearContext();
+            // Opcional: Podrías loguear el error aquí: System.out.println("Token error: " + ex.getMessage());
+            // No lanzamos la excepción para permitir que Spring Security maneje el rechazo (401/403) más adelante.
         }
 
-        // Continuamos con el siguiente filtro en la cadena.
         filterChain.doFilter(request, response);
     }
+    
 
     private String recoverToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
