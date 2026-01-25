@@ -1,12 +1,18 @@
 package com.greetingsapp.imagesapi.controller;
 
 import com.greetingsapp.imagesapi.dto.categories.CategoryResponseDTO;
+import com.greetingsapp.imagesapi.dto.images.ImageResponseDTO;
 import com.greetingsapp.imagesapi.dto.themes.ThemeResponseDTO;
 import com.greetingsapp.imagesapi.services.CategoryService;
+import com.greetingsapp.imagesapi.services.ImageService;
 import com.greetingsapp.imagesapi.services.ThemeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,15 +32,28 @@ public class CategoryController {
     @Autowired
     private ThemeService themeService;
 
+    @Autowired
+    private ImageService imageService;
+
     @Operation(summary = "Obtiene todas las categorias")
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories(){
+    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @Operation(summary = "Obtiene las tematicas de una categoria")
     @GetMapping("/{categoryId}/themes")
-    public ResponseEntity<List<ThemeResponseDTO>> getThemeByCategory(@PathVariable Long categoryId){
+    public ResponseEntity<List<ThemeResponseDTO>> getThemeByCategory(@PathVariable Long categoryId) {
         return ResponseEntity.ok(themeService.getThemes(categoryId));
+    }
+
+    // --- NUEVO ENDPOINT ---
+    @Operation(summary = "Obtiene todas las imágenes de una categoría (paginadas)")
+    @GetMapping("/{categoryId}/images")
+    public ResponseEntity<Page<ImageResponseDTO>> getImagesByCategory(
+            @PathVariable Long categoryId,
+            @PageableDefault(size = 20, sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        return ResponseEntity.ok(imageService.getImagesByCategory(categoryId, pageable));
     }
 }
