@@ -8,6 +8,7 @@ import com.greetingsapp.imagesapi.dto.images.ImageResponseDTO;
 import com.greetingsapp.imagesapi.dto.images.UpdateImageDTO;
 import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
+import com.greetingsapp.imagesapi.repository.CategoryRepository;
 import com.greetingsapp.imagesapi.repository.ImageRepository;
 import com.greetingsapp.imagesapi.repository.ThemeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class ImageService {
 
     @Autowired
     private ThemeRepository themeRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private ImageMapper imageMapper;
@@ -141,5 +145,20 @@ public class ImageService {
         return results.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 
+    // Obtiene todas las imágenes pertenecientes a una categoría específica (a través de sus temáticas)
+    public Page<ImageResponseDTO> getImagesByCategory(Long categoryId, Pageable pageable) {
+
+        // 1. Validar que la categoría exista
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+        }
+
+        // 2. Buscar imágenes por categoría usando el metodo que creamos en el repositorio
+        Page<Image> imagePage = imageRepository.findByThemeCategoryId(categoryId, pageable);
+
+        // 3. Mapear a DTO
+        return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
+    }
 }
+
 
