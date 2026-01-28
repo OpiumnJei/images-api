@@ -175,6 +175,35 @@ public class ImageService {
         // 3. Mapear a DTO
         return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
+
+    // ============================================
+    // FALLBACK METHODS - Respuestas de emergencia
+    // ============================================
+
+    /**
+     * Fallback para getImages cuando el Circuit Breaker está abierto o hay fallos.
+     * Retorna una página vacía para degradación elegante.
+     */
+    private Page<ImageResponseDTO> getImagesFallback(Long themeId, Pageable pageable, Throwable t) {
+        log.error("Fallback activado en getImages para themeId={}. Causa: {}", themeId, t.getMessage());
+        return Page.empty(pageable);
+    }
+
+    /**
+     * Fallback para getAllImages cuando el Circuit Breaker está abierto o hay fallos.
+     * Retorna una página vacía para degradación elegante.
+     */
+    private Page<ImageResponseDTO> getAllImagesFallback(Pageable pageable, Throwable t) {
+        log.error("Fallback activado en getAllImages. Causa: {}", t.getMessage());
+        return Page.empty(pageable);
+    }
+
+    /**
+     * Fallback para searchImages cuando el Circuit Breaker está abierto o hay fallos.
+     * Retorna una página vacía para degradación elegante.
+     */
+    private Page<ImageResponseDTO> searchImagesFallback(String query, Pageable pageable, Throwable t) {
+        log.error("Fallback activado en searchImages para query='{}'. Causa: {}", query, t.getMessage());
+        return Page.empty(pageable);
+    }
 }
-
-
