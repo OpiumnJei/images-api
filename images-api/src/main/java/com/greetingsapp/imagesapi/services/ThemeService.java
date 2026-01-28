@@ -1,23 +1,31 @@
 package com.greetingsapp.imagesapi.services;
 
 import com.greetingsapp.imagesapi.domain.categories.Category;
-import com.greetingsapp.imagesapi.dto.themes.CreateThemeDTO;
 import com.greetingsapp.imagesapi.domain.themes.Theme;
 import com.greetingsapp.imagesapi.domain.themes.ThemeMapper;
+import com.greetingsapp.imagesapi.dto.themes.CreateThemeDTO;
 import com.greetingsapp.imagesapi.dto.themes.ThemeResponseDTO;
 import com.greetingsapp.imagesapi.dto.themes.UpdateThemeDTO;
 import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
 import com.greetingsapp.imagesapi.repository.CategoryRepository;
 import com.greetingsapp.imagesapi.repository.ThemeRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class ThemeService {
+
+    private static final Logger log = LoggerFactory.getLogger(ThemeService.class);
 
     @Autowired
     private ThemeRepository themeRepository;
@@ -74,7 +82,19 @@ public class ThemeService {
     }
 
     //metodo para traer todas las tematicas de una categoria especifica
-    public List<ThemeResponseDTO> getThemes(Long categoryId){
+
+    /**
+     * Obtiene todas las temáticas de una categoría específica.
+     * <p>
+     * Patrones de resiliencia aplicados:
+     * - @RateLimiter: Limita peticiones para proteger el servidor
+     * - @CircuitBreaker: Previene fallos en cascada si la BD está caída
+     * - @Retry: Reintenta automáticamente ante fallos transitorios
+     */
+    @RateLimiter(name = "publicApiRL")
+    @CircuitBreaker(name = "databaseCB", fallbackMethod = "getThemesFallback")
+    @Retry(name = "databaseRetry")
+    public List<ThemeResponseDTO> getThemes(Long categoryId) {
 
         if (!categoryRepository.existsById(categoryId)) {
             // Si la categoria NO EXISTE, esto SÍ es un error "No Encontrado".
@@ -85,5 +105,13 @@ public class ThemeService {
         List<Theme> themes = themeRepository.findByCategoryId(categoryId);
 
         return themeMapper.themeListToThemeResponseDTOList(themes);
+    }
+
+    /**
+     * Fallback para getThemes: devuelve lista vacía cuando el servicio falla
+     */
+    private List<ThemeResponseDTO> getThemesFallback(Long categoryId, Exception ex) {
+        log.error("Fallback activado en getThemes para categoryId={}. Causa: {}", categoryId, ex.getMessage());
+        return Collections.emptyList();
     }
 }

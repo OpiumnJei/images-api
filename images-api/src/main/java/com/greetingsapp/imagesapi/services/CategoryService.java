@@ -8,15 +8,23 @@ import com.greetingsapp.imagesapi.dto.categories.UpdateCategoryDTO;
 import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
 import com.greetingsapp.imagesapi.repository.CategoryRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service //marcamos la clase como un servicio/componente de spring
 public class CategoryService {
+
+    private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
     // con autowired entablamos una relacion con el repositorio de categorias, lo inyectamos
     @Autowired
@@ -25,7 +33,17 @@ public class CategoryService {
     @Autowired
     private CategoryMapper categoryMapper;
 
-    //metodo para mostar todas las categorias disponibles al cliente
+    /**
+     * Obtiene todas las categorías disponibles.
+     * <p>
+     * Patrones de resiliencia aplicados:
+     * - @RateLimiter: Limita peticiones para proteger el servidor
+     * - @CircuitBreaker: Previene fallos en cascada si la BD está caída
+     * - @Retry: Reintenta automáticamente ante fallos transitorios
+     */
+    @RateLimiter(name = "publicApiRL")
+    @CircuitBreaker(name = "databaseCB", fallbackMethod = "getAllCategoriesFallback")
+    @Retry(name = "databaseRetry")
     public List<CategoryResponseDTO> getAllCategories() {
 
         // 1. Obtienes las entidades de la base de datos
@@ -33,6 +51,14 @@ public class CategoryService {
 
         // 2. Usas el mapper para convertirlas a DTOs antes de devolverlas
         return categoryMapper.categoryListToCategoryResponseDTOList(categories);
+    }
+
+    /**
+     * Fallback para getAllCategories: devuelve lista vacía cuando el servicio falla
+     */
+    private List<CategoryResponseDTO> getAllCategoriesFallback(Exception ex) {
+        log.error("Fallback activado en getAllCategories. Causa: {}", ex.getMessage());
+        return Collections.emptyList();
     }
 
     //--- Metodo para crear una nueva categoria ---
