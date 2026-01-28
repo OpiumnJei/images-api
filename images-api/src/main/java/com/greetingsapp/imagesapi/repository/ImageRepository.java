@@ -22,4 +22,9 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     // Búsqueda flexible
     // Traduccción: "Encuentra imágenes donde el (Nombre contenga X) O (Descripción contenga X), ignorando mayúsculas/minúsculas"
     Page<Image> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
+
+    // Busca imágenes donde la propiedad 'category.id' dentro de 'theme' coincida con el parámetro.
+    // Spring Data traduce esto automáticamente a un JOIN.
+    Page<Image> findByThemeCategoryId(Long categoryId, Pageable pageable);
+
 }

@@ -8,6 +8,7 @@ import com.greetingsapp.imagesapi.dto.images.ImageResponseDTO;
 import com.greetingsapp.imagesapi.dto.images.UpdateImageDTO;
 import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
+import com.greetingsapp.imagesapi.repository.CategoryRepository;
 import com.greetingsapp.imagesapi.repository.ImageRepository;
 import com.greetingsapp.imagesapi.repository.ThemeRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -33,6 +34,9 @@ public class ImageService {
 
     @Autowired
     private ThemeRepository themeRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private ImageMapper imageMapper;
@@ -157,32 +161,20 @@ public class ImageService {
         return results.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 
-    // ============================================
-    // MÉTODOS FALLBACK - Respuestas degradadas
-    // ============================================
+    // Obtiene todas las imágenes pertenecientes a una categoría específica (a través de sus temáticas)
+    public Page<ImageResponseDTO> getImagesByCategory(Long categoryId, Pageable pageable) {
 
-    /**
-     * Fallback para getImages: devuelve página vacía cuando el servicio falla
-     */
-    private Page<ImageResponseDTO> getImagesFallback(Long themeId, Pageable pageable, Exception ex) {
-        log.error("Fallback activado en getImages para themeId={}. Causa: {}", themeId, ex.getMessage());
-        return Page.empty(pageable);
-    }
+        // 1. Validar que la categoría exista
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+        }
 
-    /**
-     * Fallback para getAllImages: devuelve página vacía cuando el servicio falla
-     */
-    private Page<ImageResponseDTO> getAllImagesFallback(Pageable pageable, Exception ex) {
-        log.error("Fallback activado en getAllImages. Causa: {}", ex.getMessage());
-        return Page.empty(pageable);
-    }
+        // 2. Buscar imágenes por categoría usando el metodo que creamos en el repositorio
+        Page<Image> imagePage = imageRepository.findByThemeCategoryId(categoryId, pageable);
 
-    /**
-     * Fallback para searchImages: devuelve página vacía cuando el servicio falla
-     */
-    private Page<ImageResponseDTO> searchImagesFallback(String query, Pageable pageable, Exception ex) {
-        log.error("Fallback activado en searchImages para query='{}'. Causa: {}", query, ex.getMessage());
-        return Page.empty(pageable);
+        // 3. Mapear a DTO
+        return imagePage.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 }
+
 
