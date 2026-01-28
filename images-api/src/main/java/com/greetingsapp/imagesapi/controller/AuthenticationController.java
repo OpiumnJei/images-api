@@ -4,8 +4,8 @@ import com.greetingsapp.imagesapi.domain.users.User;
 import com.greetingsapp.imagesapi.dto.authentication.LoginDTO;
 import com.greetingsapp.imagesapi.dto.authentication.TokenResponseDTO;
 import com.greetingsapp.imagesapi.infra.authentication.TokenService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,12 @@ public class AuthenticationController {
     @Autowired
     private TokenService tokenService;
 
+    /**
+     * Endpoint de login con Rate Limiter estricto (10 peticiones/segundo)
+     * para prevenir ataques de fuerza bruta.
+     */
     @Operation(summary = "Login", description = "El usuario introduce sus credenciales, y si esta registrado, se genera un JWT.")
+    @RateLimiter(name = "authRL")
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
         // Crea el objeto de autenticación con las credenciales del usuario.

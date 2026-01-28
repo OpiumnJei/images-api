@@ -10,6 +10,11 @@ import com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException;
 import com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException;
 import com.greetingsapp.imagesapi.repository.ImageRepository;
 import com.greetingsapp.imagesapi.repository.ThemeRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +25,8 @@ import java.util.Optional;
 
 @Service
 public class ImageService {
+
+    private static final Logger log = LoggerFactory.getLogger(ImageService.class);
 
     @Autowired
     private ImageRepository imageRepository;
@@ -92,6 +99,9 @@ public class ImageService {
 
 
     //usando para paginacion para traer las imagenes de una tematica especificada
+    @RateLimiter(name = "publicApiRL")
+    @CircuitBreaker(name = "databaseCB", fallbackMethod = "getImagesFallback")
+    @Retry(name = "databaseRetry")
     public Page<ImageResponseDTO> getImages(Long themeId, Pageable pageable) {
 
         // 1. VALIDACIÓN CORRECTA: ¿Existe la temática que nos piden?
@@ -110,6 +120,9 @@ public class ImageService {
     }
 
     // metodo usado para traer todas las imagenes con paginacion
+    @RateLimiter(name = "publicApiRL")
+    @CircuitBreaker(name = "databaseCB", fallbackMethod = "getAllImagesFallback")
+    @Retry(name = "databaseRetry")
     public Page<ImageResponseDTO> getAllImages(Pageable pageable) {
         Page<Image> imagePage = imageRepository.findAll(pageable);
 
@@ -117,6 +130,9 @@ public class ImageService {
     }
 
     // Metodo de búsqueda
+    @RateLimiter(name = "publicApiRL")
+    @CircuitBreaker(name = "databaseCB", fallbackMethod = "searchImagesFallback")
+    @Retry(name = "databaseRetry")
     public Page<ImageResponseDTO> searchImages(String query, Pageable pageable) {
         // 1. Limpieza básica
         String cleanQuery = query.trim();//elimina espacios al inicio y al final
@@ -141,5 +157,32 @@ public class ImageService {
         return results.map(image -> imageMapper.imageToImageResponseDTO(image));
     }
 
+    // ============================================
+    // MÉTODOS FALLBACK - Respuestas degradadas
+    // ============================================
+
+    /**
+     * Fallback para getImages: devuelve página vacía cuando el servicio falla
+     */
+    private Page<ImageResponseDTO> getImagesFallback(Long themeId, Pageable pageable, Exception ex) {
+        log.error("Fallback activado en getImages para themeId={}. Causa: {}", themeId, ex.getMessage());
+        return Page.empty(pageable);
+    }
+
+    /**
+     * Fallback para getAllImages: devuelve página vacía cuando el servicio falla
+     */
+    private Page<ImageResponseDTO> getAllImagesFallback(Pageable pageable, Exception ex) {
+        log.error("Fallback activado en getAllImages. Causa: {}", ex.getMessage());
+        return Page.empty(pageable);
+    }
+
+    /**
+     * Fallback para searchImages: devuelve página vacía cuando el servicio falla
+     */
+    private Page<ImageResponseDTO> searchImagesFallback(String query, Pageable pageable, Exception ex) {
+        log.error("Fallback activado en searchImages para query='{}'. Causa: {}", query, ex.getMessage());
+        return Page.empty(pageable);
+    }
 }
 

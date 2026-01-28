@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,7 +26,9 @@ public class Category extends AuditableBaseEntity {
     //Una categoria (one) puede tener muchas tematicas (ToMany).
     // "mappedBy" le dice a JPA: "No crees una columna para esta lista aquí.
     // La configuración de la unión ya está definida en el campo 'category' de la clase Theme."
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true) //si un Theme es eliminado de la lista themes, ese Theme es considerado un "huérfano" y debe ser eliminado de la base de datos.
+    // fetch = LAZY: Las temáticas NO se cargan automáticamente (evita N+1).
+    // Solo se cargan si se accede explícitamente a getThemes().
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Theme> themes;
 
 }
