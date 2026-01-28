@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.boot.archive.scan.spi.ClassDescriptor;
+import org.springframework.data.domain.Auditable;
 
 import java.util.List;
 
@@ -30,9 +32,7 @@ public class Theme extends AuditableBaseEntity {
 
     // Una tematica (one) puede tener muchas imagenes(ToMany)
     // "mappedBy" le dice a JPA: "No crees una columna para esta lista aquí."
-    // fetch = LAZY: Las imágenes NO se cargan automáticamente (evita N+1).
-    // Solo se cargan si se accede explícitamente a getImages().
-    @OneToMany(mappedBy = "theme", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "theme", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
 }

@@ -7,11 +7,6 @@ import com.greetingsapp.imagesapi.dto.home.HomeContentDTO;
 import com.greetingsapp.imagesapi.dto.images.ImageResponseDTO;
 import com.greetingsapp.imagesapi.repository.ImageRepository;
 import com.greetingsapp.imagesapi.repository.SpecialDayRepository;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import io.github.resilience4j.retry.annotation.Retry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,15 +14,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 // Servicio para manejar la lógica de la página de inicio
 @Service
 public class HomeService {
-
-    private static final Logger log = LoggerFactory.getLogger(HomeService.class);
 
     @Autowired
     private SpecialDayRepository specialDayRepository;
@@ -38,21 +30,8 @@ public class HomeService {
     @Autowired
     private ImageMapper imageMapper;
 
-    /**
-     * Obtiene el contenido dinámico de la página de inicio.
-     * <p>
-     * Patrones de resiliencia aplicados:
-     * - @RateLimiter: Limita a 50 peticiones/segundo para proteger el servidor
-     * - @CircuitBreaker: Previene fallos en cascada si la BD está caída
-     * - @Retry: Reintenta automáticamente ante fallos transitorios de red/BD
-     * <p>
-     * El orden de ejecución es: RateLimiter → CircuitBreaker → Retry → Método
-     */
-    @RateLimiter(name = "publicApiRL")
-    @CircuitBreaker(name = "databaseCB", fallbackMethod = "getHomeContentFallback")
-    @Retry(name = "databaseRetry")
+    // Metodo para obtener el contenido dinámico de la página de inicio
     public HomeContentDTO getHomeContent() {
-        log.debug("Obteniendo contenido del home...");
         LocalDate today = LocalDate.now(); // Fecha actual
 
         // 1. Preguntar: ¿Hay algo especial hoy (dia, mes)?
@@ -107,24 +86,5 @@ public class HomeService {
                     dtos
             );
         }
-    }
-
-    /**
-     * Método fallback que se ejecuta cuando:
-     * - El Circuit Breaker está ABIERTO (demasiados fallos recientes)
-     * - Se agotaron los reintentos del Retry
-     * <p>
-     * Devuelve una respuesta degradada pero funcional para mantener
-     * la experiencia del usuario aunque el sistema esté parcialmente caído.
-     */
-    private HomeContentDTO getHomeContentFallback(Exception ex) {
-        log.error("Fallback activado en getHomeContent. Causa: {}", ex.getMessage());
-
-        // Respuesta degradada: contenido estático de emergencia
-        return new HomeContentDTO(
-                "FALLBACK",
-                "Contenido temporalmente no disponible 🔄",
-                Collections.emptyList() // Lista vacía en lugar de null
-        );
     }
 }
