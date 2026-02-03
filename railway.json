@@ -2,8 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "images-api/dockerfile",
-    "dockerfileContext": "images-api"
+    "dockerfilePath": "Dockerfile"
   },
   "deploy": {
     "startCommand": null,
