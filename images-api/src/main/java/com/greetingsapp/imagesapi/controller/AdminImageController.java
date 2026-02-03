@@ -24,9 +24,10 @@ public class AdminImageController {
     @Autowired
     private ImageService imageService;
 
-    // --- Endpoint para crear una nueva imagen ---
+    // --- Endpoint para crear una nueva imagen (con URL existente) ---
     // POST /api/admin/images
-    @Operation(summary = "Crea una nueva imagen")
+    @Operation(summary = "Crea una imagen con URL existente",
+            description = "Usa este endpoint si ya tienes la URL de la imagen hospedada externamente")
     @PostMapping
     public ResponseEntity<ImageResponseDTO> createImage(@RequestBody @Valid CreateImageDTO createImageDTO) {
         ImageResponseDTO newImage = imageService.createImage(createImageDTO);
@@ -35,7 +36,7 @@ public class AdminImageController {
 
     // --- Endpoint para actualizar una imagen ---
     // PUT /api/admin/images/{imageId}
-    @Operation(summary = "Actualiza una nueva imagen")
+    @Operation(summary = "Actualiza una imagen existente")
     @PutMapping("/{imageId}")
     public ResponseEntity<ImageResponseDTO> updateImage(
             @PathVariable Long imageId,
@@ -47,7 +48,7 @@ public class AdminImageController {
 
     // --- Endpoint para eliminar una imagen ---
     // DELETE /api/admin/images/{imageId}
-    @Operation(summary = "Elimina una nueva imagen")
+    @Operation(summary = "Elimina una imagen de la base de datos")
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
         imageService.deleteImage(imageId);

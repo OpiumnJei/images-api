@@ -1,5 +1,6 @@
 # API de Saludos con Imágenes (images-api)
 
+![Version](https://img.shields.io/badge/version-0.0.1-blue?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17-blue?style=for-the-badge&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-green?style=for-the-badge&logo=spring)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=for-the-badge&logo=docker)
@@ -131,6 +132,16 @@ k6 run k6-tests/test-load-combined.js
 ```
 
 ➡️ **Documentación completa de k6:** Ver `k6-tests/README.md`
+
+---
+
+## 📋 Documentación Adicional
+
+| Documento                                | Descripción                      |
+|:-----------------------------------------|:---------------------------------|
+| [CHANGELOG.md](CHANGELOG.md)             | Historial de cambios y versiones |
+| [DEPLOYMENT.md](DEPLOYMENT.md)           | Guía de despliegue a producción  |
+| [k6-tests/README.md](k6-tests/README.md) | Documentación de tests de carga  |
 
 ---
 

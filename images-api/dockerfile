@@ -48,23 +48,33 @@ RUN mvn package -DskipTests
 # Paso 7: Elegir la base para la caja.
 # Empezamos de cero con una imagen súper ligera que solo tiene lo mínimo
 # indispensable para ejecutar Java. No hay herramientas de construcción aquí.
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-alpine
 
 # Paso 8: Preparar el espacio en la caja.
 # Creamos una carpeta "/app" para colocar nuestra aplicación terminada.
 WORKDIR /app
 
-# Paso 9: Mover el producto de la fábrica a la caja.
+# Paso 9: Crear usuario no-root para seguridad.
+# En producción, nunca ejecutamos como root.
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+# Paso 10: Mover el producto de la fábrica a la caja.
 # Este es el paso clave. Copiamos el archivo .jar que creamos en la Etapa 1
 # (la fábrica "build") a nuestra caja final y le ponemos un nombre simple: "app.jar".
 COPY --from=build /app/target/*.jar app.jar
 
-# Paso 10: Ponerle una "etiqueta" al puerto.
+# Paso 11: Ponerle una "etiqueta" al puerto.
 # Le decimos a Docker que nuestra aplicación, una vez encendida, escuchará
 # peticiones en el puerto 8080. Es como indicar en la caja "conectar aquí".
 EXPOSE 8080
 
-# Paso 11: Escribir las instrucciones de "encendido".
-# Este es el comando final que se ejecutará cuando alguien inicie el contenedor.
-# Básicamente dice: "Usa Java para encender y ejecutar el archivo app.jar".
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Paso 12: Escribir las instrucciones de "encendido" optimizadas para contenedores.
+# -XX:+UseContainerSupport: Detecta límites de memoria del contenedor
+# -XX:MaxRAMPercentage=75: Usa máximo 75% de la RAM disponible
+# -Djava.security.egd: Mejora el rendimiento de generación de números aleatorios
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]
