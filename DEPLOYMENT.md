@@ -16,82 +16,73 @@
 
 ---
 
-## 🏗️ Hosting Recomendado (Económico)
+## 🏗️ Opciones de Hosting
 
-### 🥇 **Railway.app** - RECOMENDADO PARA TI
+### 🥇 **Render + TiDB Cloud** - RECOMENDADO (100% GRATIS)
+
+**¿Por qué esta combinación?**
+
+- ✅ **Costo: $0/mes** - Ambos servicios tienen tier gratuito
+- ✅ **MySQL compatible** - TiDB es 100% compatible con MySQL
+- ✅ **SSL incluido** - Conexiones seguras sin configuración extra
+- ✅ **Deploy automático** - Desde GitHub
+- ✅ **Sin límite de horas** - 750 hrs/mes en Render (suficiente)
+
+**⚠️ Limitaciones del tier gratuito:**
+- Render: App se "duerme" tras 15 min de inactividad (cold start ~30s)
+- Render: 512MB RAM (optimizado en `application-render.properties`)
+- TiDB: 5GB almacenamiento, 25GB Request Units/mes
+
+**📚 Guía completa:** [`docs/RENDER-TIDB-DEPLOY-GUIDE.md`](docs/RENDER-TIDB-DEPLOY-GUIDE.md)
+
+---
+
+### 🥈 **Railway.app** - Alternativa de pago
 
 **¿Por qué Railway?**
 
-- Perfecto para primer deploy
+- Perfecto si necesitas más recursos
+- MySQL incluido en el mismo proveedor
+- Sin sleep (siempre activo)
 - Interfaz muy amigable
-- Deploy automático desde GitHub
-- MySQL incluido
-- SSL gratis
 
 **💰 Costo: ~$5-10/mes**
 
-- $5 crédito gratis al registrarte
+- $5 crédito gratis al registrarte (prueba inicial)
 - API: ~$5/mes
 - MySQL: ~$5/mes
 
-### Pasos para Deploy en Railway:
-
-```
-1. Ir a https://railway.app
-2. Registrarte con GitHub
-3. "New Project" → "Deploy from GitHub repo"
-4. Seleccionar tu repo: images-api
-5. Railway detectará el Dockerfile automáticamente
-```
-
-**Agregar MySQL:**
-
-```
-1. En tu proyecto Railway → "+ New"
-2. Database → MySQL
-3. Railway genera las credenciales automáticamente
-```
-
-**Variables de entorno en Railway:**
-
-```env
-SPRING_PROFILES_ACTIVE=prod
-DATASOURCE_URL=jdbc:mysql://${{MySQL.MYSQL_HOST}}:${{MySQL.MYSQL_PORT}}/${{MySQL.MYSQL_DATABASE}}
-DATASOURCE_USERNAME=${{MySQL.MYSQL_USER}}
-DATASOURCE_PASSWORD=${{MySQL.MYSQL_PASSWORD}}
-API_SECURITY_TOKEN_SECRET=tu-jwt-secret-muy-seguro-de-256-bits
-CORS_ALLOWED_ORIGINS=https://tu-app.railway.app
-```
+**📚 Guía completa:** [`docs/RAILWAY-DEPLOY-GUIDE.md`](docs/RAILWAY-DEPLOY-GUIDE.md)
 
 ---
 
-### 🥈 **Render.com** - Alternativa gratuita
+### 🥉 **VPS (DigitalOcean, Hetzner, etc.)** - Para más control
 
-**💰 Costo: GRATIS (con limitaciones)**
+**¿Cuándo elegir VPS?**
 
-- La app se "duerme" tras 15 min de inactividad
-- Solo PostgreSQL (no MySQL)
+- Necesitas control total del servidor
+- Múltiples aplicaciones en un solo servidor
+- Costos predecibles a largo plazo
 
-**Si quieres probar gratis:** Render es buena opción inicial.
+**💰 Costo: $4-6/mes** (Droplet básico)
 
----
+| Proveedor | Plan Mínimo | RAM | Almacenamiento |
+|-----------|-------------|-----|----------------|
+| DigitalOcean | $4/mes | 512MB | 10GB SSD |
+| Hetzner | €3.79/mes | 2GB | 20GB SSD |
+| Vultr | $5/mes | 1GB | 25GB SSD |
 
-### 🥉 **Fly.io** - Alternativa técnica
-
-**💰 Costo: $5-10/mes**
-
-- Más técnico (requiere CLI)
-- Buen rendimiento global
+> ⚠️ Requiere conocimientos de Linux, Docker, y administración de servidores.
 
 ---
 
 ## 📊 Comparativa Rápida
 
-| Servicio    | Costo/mes | MySQL | Sleep | Dificultad | Recomendado |
-|-------------|-----------|-------|-------|------------|-------------|
-| **Railway** | $10       | ✅     | No    | Fácil      | ⭐⭐⭐         |
-| **Render**  | $0-7      | ❌     | Sí    | Fácil      | ⭐⭐          |
-| **Fly.io**  | $5-10     | ✅     | No    | Media      | ⭐⭐          |
+| Servicio | Costo/mes | MySQL | Sleep | Dificultad | Ideal para |
+|----------|-----------|-------|-------|------------|------------|
+| **Render + TiDB** | **$0** | ✅ (TiDB) | Sí | Fácil | 🏆 Proyectos nuevos/POC |
+| **Railway** | $10 | ✅ | No | Fácil | Apps en producción activa |
+| **VPS** | $4-6 | ✅ | No | Alta | Control total |
 
 ---
 
@@ -105,7 +96,7 @@ CORS_ALLOWED_ORIGINS=https://tu-app.railway.app
 - [x] HikariCP optimizado para producción
 - [x] Health checks habilitados
 - [ ] Crear archivo `.env` local (NO commitear)
-- [ ] Configurar variables en Railway
+- [ ] Configurar variables en tu hosting elegido
 - [ ] Verificar que todo funcione localmente con Docker
 
 ---
@@ -159,9 +150,9 @@ Luego en GitHub:
    git tag -a v0.0.1 -m "Release v0.0.1"
    git push origin v0.0.1
    
-4. En Railway:
-   - Conectar repo
-   - Configurar variables
+4. En tu hosting elegido:
+   - Conectar repo GitHub
+   - Configurar variables de entorno
    - Deploy automático al detectar push a main
 ```
 
@@ -182,10 +173,10 @@ Una vez desplegado, verificar:
 
 ## 💡 Tips para Primer Deploy
 
-1. **Empieza con Railway** - Es el más amigable
-2. **Usa el crédito gratis** - $5 para probar
-3. **Monitorea los logs** - Railway los muestra en tiempo real
-4. **No te preocupes por escalar** - Railway escala fácil cuando necesites
+1. **Empieza con Render + TiDB** - Es gratis y suficiente para validar tu proyecto
+2. **Usa UptimeRobot** - Gratis para evitar el sleep de Render
+3. **Monitorea los logs** - Render los muestra en tiempo real
+4. **Migra a Railway/VPS** cuando generes ingresos - Escalar es fácil
 
 ---
 
@@ -195,67 +186,15 @@ La arquitectura que tienes (resiliencia, seguridad, Docker) es sólida para un p
 
 ---
 
-## 📦 Archivos de Configuración para Railway
+## 📦 Archivos de Configuración por Plataforma
 
-Tu proyecto incluye estos archivos optimizados para Railway:
-
-| Archivo | Descripción |
-|---------|-------------|
-| `railway.json` | Configuración de build y deploy |
-| `images-api/Procfile` | Comando de inicio alternativo |
-| `images-api/system.properties` | Versión de Java |
-| `images-api/dockerfile` | Build multi-stage optimizado |
-
----
-
-## 🔧 Configuración Paso a Paso en Railway
-
-### 1. Crear Proyecto
-```
-1. Ir a https://railway.app
-2. Registrarte con GitHub
-3. Click en "New Project"
-4. Seleccionar "Deploy from GitHub repo"
-5. Autorizar acceso y seleccionar: images-api
-```
-
-### 2. Agregar Base de Datos MySQL
-```
-1. En tu proyecto → Click en "+ New"
-2. Seleccionar "Database" → "MySQL"
-3. Railway crea automáticamente las credenciales
-```
-
-### 3. Configurar Variables de Entorno
-En tu servicio de la API, ir a "Variables" y agregar:
-
-```env
-# Perfil de Spring
-SPRING_PROFILES_ACTIVE=prod
-
-# Base de datos (usa referencias a MySQL)
-DATASOURCE_URL=jdbc:mysql://${{MySQL.MYSQL_HOST}}:${{MySQL.MYSQL_PORT}}/${{MySQL.MYSQL_DATABASE}}
-DATASOURCE_USERNAME=${{MySQL.MYSQL_USER}}
-DATASOURCE_PASSWORD=${{MySQL.MYSQL_PASSWORD}}
-
-# JWT Secret (genera uno seguro de 32+ caracteres)
-API_SECURITY_TOKEN_SECRET=TuClaveSecretaMuySeguraDeAlMenos32Caracteres
-
-# CORS (tu dominio de Railway)
-CORS_ALLOWED_ORIGINS=https://tu-app.up.railway.app
-```
-
-### 4. Verificar Health Check
-Railway detectará automáticamente:
-- **Health Check Path:** `/actuator/health`
-- **Puerto:** Automático via variable `$PORT`
-
-### 5. Obtener URL Pública
-```
-1. En "Settings" → "Networking"
-2. Click en "Generate Domain"
-3. Tu API estará en: https://tu-app.up.railway.app
-```
+| Archivo | Plataforma | Descripción |
+|---------|------------|-------------|
+| `render.yaml` | Render | Configuración de infraestructura |
+| `application-render.properties` | Render | Perfil optimizado para 512MB |
+| `railway.json` | Railway | Configuración de build y deploy |
+| `Dockerfile` | Todas | Build multi-stage optimizado |
+| `docker-compose.yml` | Local/VPS | Orquestación con MySQL |
 
 ---
 
@@ -266,6 +205,11 @@ Para producción, genera una clave segura:
 **Opción PowerShell:**
 ```powershell
 [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])
+```
+
+**Opción Bash/Linux:**
+```bash
+openssl rand -base64 32
 ```
 
 **Opción Online:**
@@ -280,9 +224,18 @@ Una vez desplegado, estos endpoints estarán disponibles:
 | Endpoint | Uso |
 |----------|-----|
 | `/actuator/health` | Verificar estado general |
-| `/actuator/health/liveness` | Kubernetes/Railway liveness probe |
-| `/actuator/health/readiness` | Kubernetes/Railway readiness probe |
+| `/actuator/health/liveness` | Liveness probe |
+| `/actuator/health/readiness` | Readiness probe |
 | `/actuator/circuitbreakers` | Estado de Circuit Breakers |
 | `/actuator/ratelimiters` | Estado de Rate Limiters |
 | `/swagger-ui/index.html` | Documentación interactiva |
 
+---
+
+## 📚 Guías Detalladas
+
+| Guía | Descripción |
+|------|-------------|
+| [`docs/RENDER-TIDB-DEPLOY-GUIDE.md`](docs/RENDER-TIDB-DEPLOY-GUIDE.md) | 🏆 Deploy gratuito en Render + TiDB Cloud |
+| [`docs/RAILWAY-DEPLOY-GUIDE.md`](docs/RAILWAY-DEPLOY-GUIDE.md) | Deploy de pago en Railway |
+| [`docs/HIKARICP-GUIA.md`](docs/HIKARICP-GUIA.md) | Optimización de conexiones a BD |
