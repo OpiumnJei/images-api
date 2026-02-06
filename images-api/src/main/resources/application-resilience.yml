@@ -1,31 +1,31 @@
 # ===========================================
-# CONFIGURACIÓN DE RESILIENCE4J
+# CONFIGURACION DE RESILIENCE4J
 # Patrones de tolerancia a fallos
 # ===========================================
 
-# cada instance es un conjunto de reglas a medida para un problema específico.
+# cada instance es un conjunto de reglas a medida para un problema especifico.
 resilience4j:
   # ============================================
-  # CIRCUIT BREAKER - Prevención de fallos en cascada
+  # CIRCUIT BREAKER - Prevencion de fallos en cascada
   # ============================================
   circuitbreaker:
     configs:
       default:
         # Registra el estado del circuit breaker en el health endpoint
         registerHealthIndicator: true
-        # Tamaño de la ventana deslizante (últimas 10 llamadas)
+        # Tamano de la ventana deslizante (ultimas 10 llamadas)
         slidingWindowSize: 10
         # Tipo de ventana: COUNT_BASED (por llamadas) o TIME_BASED (por tiempo)
         slidingWindowType: COUNT_BASED
-        # Número mínimo de llamadas antes de calcular el porcentaje de fallos
+        # Numero minimo de llamadas antes de calcular el porcentaje de fallos
         minimumNumberOfCalls: 5
         # Porcentaje de fallos para abrir el circuito (50% = 5 de 10 fallan)
         failureRateThreshold: 50
         # Tiempo que el circuito permanece OPEN antes de pasar a HALF-OPEN
         waitDurationInOpenState: 30s
-        # Llamadas permitidas en estado HALF-OPEN para probar si el servicio se recuperó
+        # Llamadas permitidas en estado HALF-OPEN para probar si el servicio se recupero
         permittedNumberOfCallsInHalfOpenState: 3
-        # Transición automática de OPEN a HALF-OPEN sin esperar una llamada
+        # Transicion automatica de OPEN a HALF-OPEN sin esperar una llamada
         automaticTransitionFromOpenToHalfOpenEnabled: true
         # Excepciones que cuentan como fallo
         recordExceptions:
@@ -33,18 +33,18 @@ resilience4j:
           - java.util.concurrent.TimeoutException
           - org.springframework.web.client.ResourceAccessException
           - org.springframework.dao.DataAccessResourceFailureException
-        # Excepciones que se ignoran (no cuentan como fallo ni éxito)
+        # Excepciones que se ignoran (no cuentan como fallo ni exito)
         ignoreExceptions:
           - com.greetingsapp.imagesapi.infra.errors.ResourceNotFoundException
           - com.greetingsapp.imagesapi.infra.errors.DuplicateResourceException
 
-    # Configuraciones específicas por instancia
+    # Configuraciones especificas por instancia
     instances:
       # Circuit breaker para operaciones de base de datos
       databaseCB:
         baseConfig: default
-        failureRateThreshold: 60 # Más tolerante a fallos de BD 60%
-        slidingWindowSize: 10     # Evalúa las últimas 10 llamadas
+        failureRateThreshold: 60 # Mas tolerante a fallos de BD 60%
+        slidingWindowSize: 10     # Evalua las ultimas 10 llamadas
         waitDurationInOpenState: 20s # Espera 20s antes de probar de nuevo
 
       # Circuit breaker para servicios externos (futuras integraciones)
@@ -63,7 +63,7 @@ resilience4j:
   retry:
     configs:
       default:
-        # Número máximo de intentos (incluyendo el primero)
+        # Numero maximo de intentos (incluyendo el primero)
         maxAttempts: 3
         # Tiempo de espera entre reintentos
         waitDuration: 500ms
@@ -88,7 +88,7 @@ resilience4j:
         baseConfig: default
         maxAttempts: 3 # Total de 3 intentos
         waitDuration: 300ms # Espera inicial
-        enableExponentialBackoff: true # 300ms → 600ms → 1200ms
+        enableExponentialBackoff: true # 300ms -> 600ms -> 1200ms
 
       externalServiceRetry:
         baseConfig: default
@@ -98,37 +98,37 @@ resilience4j:
 
 
   # ============================================
-  # RATE LIMITER - Protección contra sobrecarga
+  # RATE LIMITER - Proteccion contra sobrecarga
   # ============================================
   ratelimiter:
     configs:
       default:
         # Registrar en health indicator
         registerHealthIndicator: true
-        # Número de permisos disponibles en el periodo
+        # Numero de permisos disponibles en el periodo
         limitForPeriod: 100
-        # Duración del periodo de renovación
+        # Duracion del periodo de renovacion
         limitRefreshPeriod: 1s
-        # Tiempo máximo de espera para obtener un permiso
+        # Tiempo maximo de espera para obtener un permiso
         timeoutDuration: 0s
 
     instances:
-      # Rate limiter estricto para endpoints públicos de lectura
+      # Rate limiter estricto para endpoints publicos de lectura
       publicApiRL:
         baseConfig: default
-        limitForPeriod: 50 # Máximo 50 solicitudes por segundo
+        limitForPeriod: 50 # Maximo 50 solicitudes por segundo
         limitRefreshPeriod: 1s
         timeoutDuration: 500ms
 
-      # Rate limiter más permisivo para endpoints de admin
+      # Rate limiter mas permisivo para endpoints de admin
       adminApiRL:
         baseConfig: default
-        limitForPeriod: 100 # Máximo 100 solicitudes por segundo
+        limitForPeriod: 100 # Maximo 100 solicitudes por segundo
         limitRefreshPeriod: 1s
 
-      # Rate limiter muy estricto para autenticación (prevenir brute force)
+      # Rate limiter muy estricto para autenticacion (prevenir brute force)
       authRL:
-        limitForPeriod: 10 # Máximo 10 solicitudes por segundo
+        limitForPeriod: 10 # Maximo 10 solicitudes por segundo
         limitRefreshPeriod: 1s
         timeoutDuration: 0s
 
