@@ -85,14 +85,15 @@ jdbc:mysql://gateway01.us-east-1.prod.aws.tidbcloud.com:4000/images_app?sslMode=
 
 ### 2.3 Configuración del Servicio
 
-| Campo | Valor |
-|-------|-------|
-| **Name** | `images-api` |
-| **Region** | `Oregon (US West)` o cercana a TiDB |
-| **Branch** | `main` |
-| **Runtime** | `Docker` |
-| **Dockerfile Path** | `./Dockerfile` |
-| **Instance Type** | `Free` |
+| Campo | Valor | Notas |
+|-------|-------|-------|
+| **Name** | `images-api` | Nombre único para tu servicio |
+| **Language** | `Docker` | Render usará el Dockerfile |
+| **Branch** | `main` | Rama de producción |
+| **Region** | `Virginia (US East)` | ⚠️ Debe coincidir con TiDB (`us-east-1`) |
+| **Root Directory** | *(dejar vacío)* | El Dockerfile raíz ya maneja la estructura |
+
+> 💡 **Tip:** Si aún no has mergeado a `main`, puedes usar temporalmente `release/v0.0.1` y cambiarlo después.
 
 ### 2.4 Variables de Entorno
 
