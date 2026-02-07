@@ -7,8 +7,8 @@ services:
   images-api:
     container_name: images-api-app
     # Nombra y etiqueta la imagen que se creará a partir del dockerfile.
-    # greetingsapp es el nombre de la organizacion, images-api es el nombre de la imagen, 1.0.0 version de la imagen
-    image: greetingsapp/images-api:1.0.0
+    # greetingsapp es el nombre de la organizacion, images-api es el nombre de la imagen, 0.0.1 version de la imagen
+    image: greetingsapp/images-api:0.0.1
     # Construye la imagen usando el dockerfile en el directorio ./images-api
     build: ./images-api  # <--- Apunta a la subcarpeta
     # Mapea el puerto 8080 del host al 8080 del contenedor.
