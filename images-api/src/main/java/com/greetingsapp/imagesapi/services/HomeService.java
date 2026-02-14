@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +54,9 @@ public class HomeService {
     @Retry(name = "databaseRetry")
     public HomeContentDTO getHomeContent() {
         log.debug("Obteniendo contenido del home...");
-        LocalDate today = LocalDate.now(); // Fecha actual
+
+        // Forzamos a que calcule 'hoy' basado en la zona horaria deseada
+        LocalDate today = LocalDate.now(ZoneId.of("America/Santo_Domingo"));
 
         // 1. Preguntar: ¿Hay algo especial hoy (dia, mes)?
         Optional<SpecialDay> specialDay = specialDayRepository.findByDayAndMonth(
