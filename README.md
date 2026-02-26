@@ -8,10 +8,9 @@
 ![Resilience4j](https://img.shields.io/badge/Resilience4j-2.2-red?style=for-the-badge)
 ![k6](https://img.shields.io/badge/k6-Testing-purple?style=for-the-badge&logo=k6)
 
-API RESTful construida con **Spring Boot** y totalmente contenerizada con **Docker**. Diseñada para ser el backend de
-una aplicación móvil de saludos, permitiendo la gestión completa de imágenes, categorías y temáticas.
+API RESTful construida con Spring Boot y totalmente contenerizada con Docker. Diseñada y desplegada en producción para dar soporte backend a aplicaciones móviles reales (**Saludos Diarios**), permitiendo la gestión completa y optimizada de imágenes, categorías y temáticas.
 
-**🛡️ Diseñada con tolerancia a fallos** usando patrones de resiliencia empresariales.
+🛡️ **Arquitectura orientada a la Resiliencia:** Implementa patrones empresariales (Circuit Breaker, Rate Limiter, Retry) para garantizar alta disponibilidad y tolerancia a fallos ante el tráfico de clientes móviles reales, validado mediante pruebas de carga con k6. Desarrollo apoyado por agentes de IA (GitHub Copilot) para mantener un código limpio y escalable.
 
 ---
 
