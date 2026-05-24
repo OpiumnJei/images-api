@@ -13,6 +13,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -49,11 +50,13 @@ public class HomeService {
      * <p>
      * El orden de ejecución es: RateLimiter → CircuitBreaker → Retry → Método
      */
+    @Cacheable(value = "homeContent") //se encarga de crear un espacio en memoria para las queries a este metodo
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getHomeContentFallback")
     @Retry(name = "databaseRetry")
     public HomeContentDTO getHomeContent() {
-        log.debug("Obteniendo contenido del home...");
+//        log.info("⚠️ [CACHE MISS] ¡Oh no! El dato no estaba en caché. Buscando en la Base de Datos...");
+//        log.debug("Obteniendo contenido del home...");
 
         // Forzamos a que calcule 'hoy' basado en la zona horaria deseada
         LocalDate today = LocalDate.now(ZoneId.of("America/Santo_Domingo"));

@@ -17,6 +17,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -102,11 +103,11 @@ public class ImageService {
     }
 
 
-    //usando para paginacion para traer las imagenes de una tematica especificada
+    @Cacheable(value = "imagesByTheme") // 🌟 Añadir aquí (Spring usará 'themeId' + 'pageable' como llave)
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getImagesFallback")
     @Retry(name = "databaseRetry")
-    public Page<ImageResponseDTO> getImages(Long themeId, Pageable pageable) {
+    public Page<ImageResponseDTO> getImages(Long themeId, Pageable pageable) {  //usando para paginacion para traer las imagenes de una tematica especificada
 
         // 1. VALIDACIÓN CORRECTA: ¿Existe la temática que nos piden?
         if (!themeRepository.existsById(themeId)) {
@@ -123,7 +124,8 @@ public class ImageService {
         // return imagePage.map(imageMapper::imageToImageResponseDTO);
     }
 
-    // metodo usado para traer todas las imagenes con paginacion
+
+    @Cacheable(value = "allImages") // 🌟 Añadir aquí (Spring usará 'pageable' como llave)
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getAllImagesFallback")
     @Retry(name = "databaseRetry")
@@ -162,6 +164,7 @@ public class ImageService {
     }
 
     // Obtiene todas las imágenes pertenecientes a una categoría específica (a través de sus temáticas)
+    @Cacheable(value = "imagesByCategory") // 🌟 Añadir aquí (Spring usará 'categoryId' + 'pageable' como llave
     public Page<ImageResponseDTO> getImagesByCategory(Long categoryId, Pageable pageable) {
 
         // 1. Validar que la categoría exista
