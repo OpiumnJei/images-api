@@ -16,6 +16,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,6 +92,7 @@ public class ThemeService {
      * - @CircuitBreaker: Previene fallos en cascada si la BD está caída
      * - @Retry: Reintenta automáticamente ante fallos transitorios
      */
+    @Cacheable(value = "themesByCategory")
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getThemesFallback")
     @Retry(name = "databaseRetry")
