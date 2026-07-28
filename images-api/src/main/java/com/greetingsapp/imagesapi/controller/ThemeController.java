@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +27,7 @@ public class ThemeController {
     //Dentro de la colección de temáticas, para la temática con un themeId específico, dame sus imágenes.
     //metodo que obtiene todas las imagenes paginadas que pertenecen a una tematica especifica
     @GetMapping("/{themeId}/images")
-    public ResponseEntity<Page<ImageResponseDTO>> getImagesByTheme(@PathVariable Long themeId, Pageable pageable){
+    public ResponseEntity<Page<ImageResponseDTO>> getImagesByTheme(@PathVariable Long themeId, @PageableDefault(size = 20, sort = "created", direction = Sort.Direction.DESC) Pageable pageable){
         return ResponseEntity.ok(imageService.getImages(themeId, pageable));
 
         //Hace lo mismo que la linea de arriba:

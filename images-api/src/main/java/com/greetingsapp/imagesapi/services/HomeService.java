@@ -14,9 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -50,69 +49,26 @@ public class HomeService {
      * <p>
      * El orden de ejecución es: RateLimiter → CircuitBreaker → Retry → Método
      */
-    @Cacheable(value = "homeContent") //se encarga de crear un espacio en memoria para las queries a este metodo
+    @Cacheable(value = "homeContent", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getHomeContentFallback")
     @Retry(name = "databaseRetry")
-    public HomeContentDTO getHomeContent() {
-//        log.info("⚠️ [CACHE MISS] ¡Oh no! El dato no estaba en caché. Buscando en la Base de Datos...");
-//        log.debug("Obteniendo contenido del home...");
-
-        // Forzamos a que calcule 'hoy' basado en la zona horaria deseada
+    public HomeContentDTO getHomeContent(Pageable pageable) {
         LocalDate today = LocalDate.now(ZoneId.of("America/Santo_Domingo"));
 
-        // 1. Preguntar: ¿Hay algo especial hoy (dia, mes)?
         Optional<SpecialDay> specialDay = specialDayRepository.findByDayAndMonth(
-                today.getDayOfMonth(), // día del mes
-                today.getMonthValue() // mes del año
-        );
+                today.getDayOfMonth(), today.getMonthValue());
 
-        if (specialDay.isPresent()) { // si se encuentra un día especial, es decir, que coincide tanto el dia como el mes
-            // --- CASO 1: ES UN DÍA ESPECIAL ---
-            SpecialDay event = specialDay.get(); // obtenemos t0do el objeto SpecialDay
-
-            Long themeId = event.getTheme().getId();  // obtenemos el id de la tematica asociado a ese día especial
-
-            Pageable limit = PageRequest.of(0, 20); // Creamos un objeto Pageable para limitar a 20 resultados
-            // Buscamos las imágenes asociadas al TEMA de ese día especial
-            List<Image> themeImages = imageRepository.findByThemeId(themeId, limit).getContent();
-
-            // Limitamos a 20 para no saturar si hay muchas
-            List<ImageResponseDTO> dtos = imageMapper.ImageDTOtoList(
-                    themeImages
-                            .stream()
-                            .limit(20)
-                            .toList()
-            );
-
-            // Retornamos el contenido especial para hoy
-            return new HomeContentDTO(
-                    "SPECIAL_EVENT",
-                    "Hoy es " + event.getName() + " ✨", // Ej: Hoy es Navidad ✨
-                    dtos
-            );
-
-        } else {
-            // --- CASO 2: DÍA NORMAL (MOSTRAR NOVEDADES) ---
-
-            // Buscamos las últimas 20 imágenes subidas al sistema en general
-            // Usamos Paging para traer solo 20 ordenadas por ID descendente (o created date)
-            // PageRequest es el control remoto de paginación
-            List<Image> recentImages = imageRepository.findAll(
-                    PageRequest.of(
-                            0,
-                            20,
-                            Sort.by(Sort.Direction.DESC, "id"))
-            ).getContent(); //obtemos los datos crudos de la paginacion
-
-            List<ImageResponseDTO> dtos = imageMapper.ImageDTOtoList(recentImages);
-
-            return new HomeContentDTO(
-                    "DEFAULT",
-                    "Lo Último Agregado 🔥",
-                    dtos
-            );
+        if (specialDay.isPresent()) {
+            SpecialDay event = specialDay.get();
+            Page<Image> imagePage = imageRepository.findByThemeId(event.getTheme().getId(), pageable);
+            List<ImageResponseDTO> dtos = imageMapper.ImageDTOtoList(imagePage.getContent());
+            return new HomeContentDTO("SPECIAL_EVENT", "Hoy es " + event.getName() + " ✨", dtos, imagePage.isLast(), imagePage.getTotalPages());
         }
+
+        Page<Image> imagePage = imageRepository.findAll(pageable);
+        List<ImageResponseDTO> dtos = imageMapper.ImageDTOtoList(imagePage.getContent());
+        return new HomeContentDTO("DEFAULT", "Lo Último Agregado 🔥", dtos, imagePage.isLast(), imagePage.getTotalPages());
     }
 
     /**
@@ -123,14 +79,8 @@ public class HomeService {
      * Devuelve una respuesta degradada pero funcional para mantener
      * la experiencia del usuario aunque el sistema esté parcialmente caído.
      */
-    private HomeContentDTO getHomeContentFallback(Exception ex) {
-        log.error("Fallback activado en getHomeContent. Causa: {}", ex.getMessage());
-
-        // Respuesta degradada: contenido estático de emergencia
-        return new HomeContentDTO(
-                "FALLBACK",
-                "Contenido temporalmente no disponible 🔄",
-                Collections.emptyList() // Lista vacía en lugar de null
-        );
+    private HomeContentDTO getHomeContentFallback(Pageable pageable, Exception ex) {
+        log.error("Fallback activado en getHomeContent (page: {}, size: {}). Causa: {}", pageable.getPageNumber(), pageable.getPageSize(), ex.getMessage());
+        return new HomeContentDTO("FALLBACK", "Contenido temporalmente no disponible 🔄", Collections.emptyList(), true, 0);
     }
 }
