@@ -103,7 +103,7 @@ public class ImageService {
     }
 
 
-    @Cacheable(value = "imagesByTheme") // 🌟 Añadir aquí (Spring usará 'themeId' + 'pageable' como llave)
+    @Cacheable(value = "imagesByTheme", key = "#themeId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getImagesFallback")
     @Retry(name = "databaseRetry")
@@ -125,7 +125,7 @@ public class ImageService {
     }
 
 
-    @Cacheable(value = "allImages") // 🌟 Añadir aquí (Spring usará 'pageable' como llave)
+    @Cacheable(value = "allImages", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getAllImagesFallback")
     @Retry(name = "databaseRetry")
@@ -164,7 +164,7 @@ public class ImageService {
     }
 
     // Obtiene todas las imágenes pertenecientes a una categoría específica (a través de sus temáticas)
-    @Cacheable(value = "imagesByCategory") // 🌟 Añadir aquí (Spring usará 'categoryId' + 'pageable' como llave
+    @Cacheable(value = "imagesByCategory", key = "#categoryId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ImageResponseDTO> getImagesByCategory(Long categoryId, Pageable pageable) {
 
         // 1. Validar que la categoría exista
