@@ -92,7 +92,7 @@ public class ThemeService {
      * - @CircuitBreaker: Previene fallos en cascada si la BD está caída
      * - @Retry: Reintenta automáticamente ante fallos transitorios
      */
-    @Cacheable(value = "themesByCategory")
+    @Cacheable(value = "themesByCategory", key = "#categoryId")
     @RateLimiter(name = "publicApiRL")
     @CircuitBreaker(name = "databaseCB", fallbackMethod = "getThemesFallback")
     @Retry(name = "databaseRetry")
